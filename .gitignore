@@ -1,0 +1,15 @@
+# Pyton temp files
+build/
+dist/
+.idea/
+python_can.egg-info/
+pycanlib.egg-info/
+__pycache__/
+
+# Temporary files
+*.bak
+*.~*
+~$*.*
+*.swp
+
+*.hex
