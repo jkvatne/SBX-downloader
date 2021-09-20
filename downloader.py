@@ -13,6 +13,7 @@ import traceback
 import ports
 import intelhex
 from datetime import datetime
+import glob
 
 ERASE_CMD = 0x45
 ADR_CMD = 0x85
@@ -179,8 +180,9 @@ if __name__ == '__main__':
         print(str(err))
         sys.exit(2)
 
-    hex_file = ""
+    # (_, _, filenames) = walk('.').next()
     port = ""
+    hex_file = ""
     for current_argument, current_value in arguments:
         if current_argument in ("-f", "--file"):
             hex_file = current_value
@@ -207,6 +209,13 @@ if __name__ == '__main__':
             print("No com-port found")
             sys.exit(1)
 
+        if hex_file == "":
+            filenames = glob.glob("./*.hex")
+            if len(filenames) != 1:
+                print("No hex files given. Use \"download --file=name.hex\"")
+            else:
+                hex_file = filenames[0]
+
         try:
             board = SB01(port)
         except:
@@ -214,12 +223,20 @@ if __name__ == '__main__':
             print("Error opening port \"%s\"" % port)
             sys.exit(1)
 
+        time.sleep(0.2)
         rev = board.get_rev()
+        if len(rev)==0:
+            print("No response freom card. Check cable and connect battery while the <self-test> button is pressed, The led should double-blink.")
+            sys.exit(2)
+
         if rev[0] > 1:
             print("This bootloader version is not supported")
             sys.exit(2)
 
-        hex = intelhex.IntelHex(hex_file)
+        try:
+            hex = intelhex.IntelHex(hex_file)
+        except:
+            print("Coud not open file <"+hex_file+">")
 
         if start_application:
             board.exit_bootloader()
